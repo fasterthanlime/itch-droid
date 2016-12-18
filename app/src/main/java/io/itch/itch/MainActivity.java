@@ -21,6 +21,11 @@ import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.pkmmte.pkrss.Article;
+import com.pkmmte.pkrss.Callback;
+import com.pkmmte.pkrss.PkRSS;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,23 +57,48 @@ public class MainActivity extends AppCompatActivity {
         text.setText("Dynamic text!");
 
         RequestQueue queue = Volley.newRequestQueue(this);
-        String url = "https://itch.io/country";
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                text.setText(response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                text.setText("That didn't work: " + error.toString());
-            }
-        });
-        queue.add(stringRequest);
+        if (false) {
+            String url = "https://itch.io/country";
+            StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    text.setText(response);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    text.setText("That didn't work: " + error.toString());
+                }
+            });
+            queue.add(stringRequest);
+        }
+
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+        final String feedUrl = "https://itch.io/games/newest.xml";
+        PkRSS.with(this).load(feedUrl).callback(new Callback() {
+            @Override
+            public void onPreload() {
+                text.setText("Preloading...");
+            }
+
+            @Override
+            public void onLoadFailed() {
+                text.setText("Load failed :(");
+            }
+
+            @Override
+            public void onLoaded(List<Article> newArticles) {
+                String titles = "";
+                for (Article article: newArticles) {
+                    titles += "--------------------------------------\n" + article.getTitle() + "\n";
+                }
+                text.setText(titles);
+            }
+        }).async();
     }
 
     @Override
